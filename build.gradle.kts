@@ -4,10 +4,13 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 plugins {
     java
+    `maven-publish`
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -188,5 +191,130 @@ dependencies {
             implementation(project(":licenses:${properties.getProperty("package")}-included"))
 
         }
+
+
+}
+
+publishing {
+
+    val githubUser = System.getenv("GITHUB_USER")
+    val githubToken = System.getenv("GITHUB_TOKEN")
+
+    val versionn = "2025.01.29"
+
+    if (!versionn.startsWith(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))) {
+        error("The version doesn't start with the current date. Please change the version.")
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/Abelkrijgtalles/LicenseAnnotations")
+            credentials {
+                username = githubUser
+                password = githubToken
+            }
+        }
+    }
+    publications {
+
+        create<MavenPublication>("all") {
+            groupId = "nl.abelkrijgtalles"
+            artifactId = "license-annotations-all"
+            version = versionn
+
+            pom {
+                name = "License Annotations"
+                description = "A simple annotation library for Java to specify a license. "
+                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                licenses {
+                    license {
+                        name = "GNU GPLv3"
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                    }
+                }
+            }
+
+            tasks.named("publishAllPublicationsToGitHubPackagesRepository") {
+                dependsOn(tasks.named("shadowJar"))
+            }
+
+            // there's probably a better way to do this
+            artifact(
+                Paths.get(
+                    rootDir.toString(),
+                    "build",
+                    "libs",
+                    "${rootProject.name}-all.jar"
+                )
+            )
+        }
+
+        val licenseDir = file("license_properties/")
+
+        licenseDir.listFiles()
+            ?.filter { it.extension == "properties" }
+            ?.mapNotNull { file ->
+                val properties = Properties().apply { load(file.inputStream()) }
+
+                create<MavenPublication>(properties.getProperty("package")) {
+                    groupId = "nl.abelkrijgtalles"
+                    artifactId = "license-annotations-${properties.getProperty("package")}"
+                    version = versionn
+
+                    pom {
+                        name = "License Annotations"
+                        description = "A simple annotation library for Java to specify a license. "
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                        licenses {
+                            license {
+                                name = "GNU GPLv3"
+                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                            }
+                        }
+                    }
+
+                    // there's probably a better way to do this
+                    artifact(
+                        Paths.get(
+                            project(":licenses:${properties.getProperty("package")}").projectDir.toString(),
+                            "build",
+                            "libs",
+                            "${properties.getProperty("package")}-all.jar"
+                        )
+                    )
+                }
+
+                create<MavenPublication>(properties.getProperty("package") + "-included") {
+                    groupId = "nl.abelkrijgtalles"
+                    artifactId = "license-annotations-${properties.getProperty("package")}"
+                    version = "$versionn-included"
+
+                    pom {
+                        name = "License Annotations"
+                        description = "A simple annotation library for Java to specify a license. "
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                        licenses {
+                            license {
+                                name = "GNU GPLv3"
+                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                            }
+                        }
+                    }
+
+                    // there's probably a better way to do this
+                    artifact(
+                        Paths.get(
+                            project(":licenses:${properties.getProperty("package")}-included").projectDir.toString(),
+                            "build",
+                            "libs",
+                            "${properties.getProperty("package")}-included-all.jar"
+                        )
+                    )
+                }
+
+            }
+
+    }
 
 }

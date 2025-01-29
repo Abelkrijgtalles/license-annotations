@@ -45,3 +45,4 @@ licenses/*/
 licenses/settings.gradle
 licenses/settings.gradle.kts
 .idea/
+publish.bat
