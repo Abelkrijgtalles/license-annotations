@@ -30,10 +30,19 @@ configurations {
         .filter { it.extension == "json" }
         .flatMap { mapper.readValue<List<Map<String, Any>>>(it) }
         .mapNotNull { obj ->
+
+            var other_names = ArrayList<String>()
+            if (obj["other_names"] != null) {
+                (obj["other_names"] as List<Map<String, Any?>>).forEach { name ->
+                    other_names = other_names.plus(name["name"].toString()) as ArrayList<String>
+                }
+            }
+
             GeneratableLicense(
                 convertToName(obj["name"].toString()),
                 convertToPackage(obj["id"].toString()),
-                obj["id"].toString()
+                obj["id"].toString(),
+                other_names
             )
         }
 
@@ -78,13 +87,51 @@ fun convertToPackage(string: String): String {
 
 fun generateProjectForLicense(license: GeneratableLicense) {
 
-    val source = """
-        package nl.abelkrijgtalles.licenseannotations.${license.`package`};
+
+    // create directory and source code
+    val projectPath = Paths.get(rootDir.toString(), "licenses", license.getPackage())
+    val javaSourceCodePath =
+        projectPath.resolve("src/main/java/nl/abelkrijgtalles/licenseannotations/${license.getPackage()}")
+    val annotationFile = javaSourceCodePath.resolve("${license.name}.java")
+
+    Files.createDirectories(javaSourceCodePath)
+    Files.write(
+        annotationFile,
+        generateSourceCodeFile(license.name, license.`package`).toByteArray(StandardCharsets.UTF_8)
+    )
+
+    for (alternativeName in license.alternativeNames) {
+        Files.write(
+            javaSourceCodePath.resolve("${alternativeName}.java"),
+            generateSourceCodeFile(alternativeName, license.`package`).toByteArray(StandardCharsets.UTF_8)
+        )
+    }
+
+    // create build.gradle.kts
+    Files.write(
+        projectPath.resolve("build.gradle.kts"), """
+            plugins {
+                java
+            }
+                
+            dependencies {
+            
+                implementation(project(":common"))
+            
+            }
+        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
+    )
+
+}
+
+fun generateSourceCodeFile(name: String, packagee: String): String {
+    return """
+        package nl.abelkrijgtalles.licenseannotations.${packagee};
 
         import nl.abelkrijgtalles.licenseannotations.common.PossiblyEmpty;
 
         @SuppressWarnings("unused")
-        public @interface ${license.name} {
+        public @interface $name {
 
             /**
              * @return The name of the original project.
@@ -127,35 +174,6 @@ fun generateProjectForLicense(license: GeneratableLicense) {
 
         }
         """.trimIndent()
-
-    // create directory and source code
-
-    val projectPath = Paths.get(rootDir.toString(), "licenses", license.getPackage())
-    val javaSourceCodePath =
-        projectPath.resolve("src/main/java/nl/abelkrijgtalles/licenseannotations/${license.getPackage()}")
-    val annotationFile = javaSourceCodePath.resolve("${license.name}.java")
-
-    Files.createDirectories(javaSourceCodePath)
-    Files.write(
-        annotationFile,
-        source.toByteArray(StandardCharsets.UTF_8)
-    )
-
-    // create build.gradle.kts
-    Files.write(
-        projectPath.resolve("build.gradle.kts"), """
-            plugins {
-                java
-            }
-                
-            dependencies {
-            
-                implementation(project(":common"))
-            
-            }
-        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
-    )
-
 }
 
 fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
@@ -278,70 +296,70 @@ publishing {
             )
         }
 
-        val licenseDir = file("license_properties/")
-
         file("licenses").listFiles().forEach { file ->
 
-            create<MavenPublication>(file.name) {
-                groupId = "nl.abelkrijgtalles"
-                artifactId = "license-annotations-${file.name}"
-                version = versionn
-                description = "A simple annotation library for Java to specify a license."
+            if (!file.name.endsWith("-included")) {
 
-                pom {
-                    name = "License Annotations"
+                create<MavenPublication>(file.name) {
+                    groupId = "nl.abelkrijgtalles"
+                    artifactId = "license-annotations-${file.name}"
+                    version = versionn
                     description = "A simple annotation library for Java to specify a license."
-                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                    licenses {
-                        license {
-                            name = "GNU GPLv3"
-                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+
+                    pom {
+                        name = "License Annotations"
+                        description = "A simple annotation library for Java to specify a license."
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                        licenses {
+                            license {
+                                name = "GNU GPLv3"
+                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                            }
                         }
                     }
+
+                    // there's probably a better way to do this
+                    artifact(
+                        Paths.get(
+                            project(":licenses:${file.name}").projectDir.toString(),
+                            "build",
+                            "libs",
+                            "${file.name}-all.jar"
+                        )
+                    )
                 }
 
-                // there's probably a better way to do this
-                artifact(
-                    Paths.get(
-                        project(":licenses:${file.name}").projectDir.toString(),
-                        "build",
-                        "libs",
-                        "${file.name}-all.jar"
-                    )
-                )
-            }
-
-            create<MavenPublication>(file.name + "-included") {
-                groupId = "nl.abelkrijgtalles"
-                artifactId = "license-annotations-${file.name}"
-                version = "$versionn-included"
-                description = "A simple annotation library for Java to specify a license."
-
-                pom {
-                    name = "License Annotations"
+                create<MavenPublication>(file.name + "-included") {
+                    groupId = "nl.abelkrijgtalles"
+                    artifactId = "license-annotations-${file.name}"
+                    version = "$versionn-included"
                     description = "A simple annotation library for Java to specify a license."
-                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                    licenses {
-                        license {
-                            name = "GNU GPLv3"
-                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+
+                    pom {
+                        name = "License Annotations"
+                        description = "A simple annotation library for Java to specify a license."
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                        licenses {
+                            license {
+                                name = "GNU GPLv3"
+                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                            }
                         }
                     }
+
+                    // there's probably a better way to do this
+                    artifact(
+                        Paths.get(
+                            project(":licenses:${file.name}-included").projectDir.toString(),
+                            "build",
+                            "libs",
+                            "${file.name}-included-all.jar"
+                        )
+                    )
                 }
 
-                // there's probably a better way to do this
-                artifact(
-                    Paths.get(
-                        project(":licenses:${file.name}-included").projectDir.toString(),
-                        "build",
-                        "libs",
-                        "${file.name}-included-all.jar"
-                    )
-                )
             }
 
         }
-
     }
-
 }
