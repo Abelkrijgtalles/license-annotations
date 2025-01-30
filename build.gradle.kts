@@ -235,7 +235,9 @@ dependencies {
     implementation(project(":common"))
 
     file("licenses").listFiles().forEach { file ->
-        implementation(project(":licenses:${file.name}"))
+        if (file.name != "build") {
+            implementation(project(":licenses:${file.name}"))
+        }
     }
 
 }
@@ -298,8 +300,7 @@ publishing {
 
         file("licenses").listFiles().forEach { file ->
 
-            if (!file.name.endsWith("-included")) {
-
+            if (!file.name.endsWith("-included") && file.name != "build") {
                 create<MavenPublication>(file.name) {
                     groupId = "nl.abelkrijgtalles"
                     artifactId = "license-annotations-${file.name}"
@@ -357,9 +358,7 @@ publishing {
                         )
                     )
                 }
-
             }
-
         }
     }
 }
