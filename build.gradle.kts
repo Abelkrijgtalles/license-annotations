@@ -74,7 +74,7 @@ fun generateProjectForLicense(license: GeneratableLicense) {
             String projectSourceCode() default "";
 
             /**
-             * @return The location of the original class as a canonical name.
+             * @return The location of the original class.
              */
             @PossiblyEmpty
             String originalLocation() default "";
@@ -94,6 +94,11 @@ fun generateProjectForLicense(license: GeneratableLicense) {
              * @return Whether only small changes are being made to the file.
              */
             boolean smallChanges() default false;
+            
+            /**
+             * @return Additional information.
+             */
+            String otherInformation() default "";
 
         }
         """.trimIndent()
@@ -173,6 +178,12 @@ allprojects.forEach { p ->
         }
     }
 
+    p.dependencies {
+        if (p != project(":common").dependencyProject) {
+            implementation(project(":common"))
+        }
+    }
+
 }
 
 dependencies {
@@ -200,7 +211,7 @@ publishing {
     val githubUser = System.getenv("GITHUB_USER")
     val githubToken = System.getenv("GITHUB_TOKEN")
 
-    val versionn = "2025.01.29"
+    val versionn = "2025.01.30"
 
     if (!versionn.startsWith(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))) {
         error("The version doesn't start with the current date. Please change the version.")
@@ -222,10 +233,11 @@ publishing {
             groupId = "nl.abelkrijgtalles"
             artifactId = "license-annotations-all"
             version = versionn
+            description = "A simple annotation library for Java to specify a license."
 
             pom {
                 name = "License Annotations"
-                description = "A simple annotation library for Java to specify a license. "
+                description = "A simple annotation library for Java to specify a license."
                 url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
                 licenses {
                     license {
@@ -261,10 +273,11 @@ publishing {
                     groupId = "nl.abelkrijgtalles"
                     artifactId = "license-annotations-${properties.getProperty("package")}"
                     version = versionn
+                    description = "A simple annotation library for Java to specify a license."
 
                     pom {
                         name = "License Annotations"
-                        description = "A simple annotation library for Java to specify a license. "
+                        description = "A simple annotation library for Java to specify a license."
                         url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
                         licenses {
                             license {
@@ -289,10 +302,11 @@ publishing {
                     groupId = "nl.abelkrijgtalles"
                     artifactId = "license-annotations-${properties.getProperty("package")}"
                     version = "$versionn-included"
+                    description = "A simple annotation library for Java to specify a license."
 
                     pom {
                         name = "License Annotations"
-                        description = "A simple annotation library for Java to specify a license. "
+                        description = "A simple annotation library for Java to specify a license."
                         url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
                         licenses {
                             license {
