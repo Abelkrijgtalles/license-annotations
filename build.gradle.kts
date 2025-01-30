@@ -267,7 +267,7 @@ publishing {
 
         create<MavenPublication>("all") {
             groupId = "nl.abelkrijgtalles"
-            artifactId = "license-annotations-all"
+            artifactId = "license-annotations"
             version = versionn
             description = "A simple annotation library for Java to specify a license."
 
