@@ -34,7 +34,7 @@ configurations {
             var other_names = ArrayList<String>()
             if (obj["other_names"] != null) {
                 (obj["other_names"] as List<Map<String, Any?>>).forEach { name ->
-                    other_names = other_names.plus(name["name"].toString()) as ArrayList<String>
+                    other_names = other_names.plus(convertToName(name["name"].toString())) as ArrayList<String>
                 }
             }
 
