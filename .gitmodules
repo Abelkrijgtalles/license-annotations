@@ -1,0 +1,3 @@
+[submodule "licenses"]
+	path = raw_licenses
+	url = https://github.com/OpenSourceOrg/licenses.git
