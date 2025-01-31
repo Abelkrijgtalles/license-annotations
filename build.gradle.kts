@@ -290,8 +290,7 @@ publishing {
             // there's probably a better way to do this
             artifact(
                 Paths.get(
-                    rootDir.toString(),
-                    "build",
+                    buildDir.toString(),
                     "libs",
                     "${rootProject.name}-all.jar"
                 )
@@ -322,8 +321,7 @@ publishing {
                     // there's probably a better way to do this
                     artifact(
                         Paths.get(
-                            project(":licenses:${file.name}").projectDir.toString(),
-                            "build",
+                            project(":licenses:${file.name}").buildDir.toString(),
                             "libs",
                             "${file.name}-all.jar"
                         )
@@ -351,8 +349,7 @@ publishing {
                     // there's probably a better way to do this
                     artifact(
                         Paths.get(
-                            project(":licenses:${file.name}-included").projectDir.toString(),
-                            "build",
+                            project(":licenses:${file.name}-included").buildDir.toString(),
                             "libs",
                             "${file.name}-included-all.jar"
                         )
