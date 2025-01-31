@@ -193,14 +193,41 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
     // create build.gradle.kts
     Files.write(
         projectPath.resolve("build.gradle.kts"), """
+            import java.time.LocalDate
+            import java.time.format.DateTimeFormatter
+            
             plugins {
                 java
+                `maven-publish`
             }
                 
             dependencies {
-            
                 implementation(project(":licenses:${license.`package`}"))
+            }
             
+            publishing {
+                publications {
+                    create<MavenPublication>("${license.`package`}") {
+                        groupId = "nl.abelkrijgtalles"
+                        artifactId = "license-annotations-${license.`package`}"
+                        version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
+                        description = "A simple annotation library for Java to specify a license."
+
+                        pom {
+                            name = "License Annotations"
+                            description = "A simple annotation library for Java to specify a license."
+                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                            licenses {
+                                license {
+                                    name = "GNU GPLv3"
+                                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                                }
+                            }
+                        }
+
+                        from(components["java"])
+                    }
+                }
             }
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
     )
@@ -243,32 +270,11 @@ dependencies {
 }
 
 publishing {
-
-    val githubUser = System.getenv("GITHUB_USER")
-    val githubToken = System.getenv("GITHUB_TOKEN")
-
-    val versionn = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
-
-    if (!versionn.startsWith(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))) {
-        error("The version doesn't start with the current date. Please change the version.")
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Abelkrijgtalles/LicenseAnnotations")
-            credentials {
-                username = githubUser
-                password = githubToken
-            }
-        }
-    }
     publications {
-
-        create<MavenPublication>("all") {
+        create<MavenPublication>(project.name) {
             groupId = "nl.abelkrijgtalles"
             artifactId = "license-annotations"
-            version = versionn
+            version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
             description = "A simple annotation library for Java to specify a license."
 
             pom {
@@ -283,79 +289,7 @@ publishing {
                 }
             }
 
-            tasks.named("publishAllPublicationsToGitHubPackagesRepository") {
-                dependsOn(tasks.named("shadowJar"))
-            }
-
-            // there's probably a better way to do this
-            artifact(
-                Paths.get(
-                    buildDir.toString(),
-                    "libs",
-                    "${rootProject.name}-all.jar"
-                )
-            )
-        }
-
-        file("licenses").listFiles().forEach { file ->
-
-            if (!file.name.endsWith("-included") && file.name != "build") {
-                create<MavenPublication>(file.name) {
-                    groupId = "nl.abelkrijgtalles"
-                    artifactId = "license-annotations-${file.name}"
-                    version = versionn
-                    description = "A simple annotation library for Java to specify a license."
-
-                    pom {
-                        name = "License Annotations"
-                        description = "A simple annotation library for Java to specify a license."
-                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                        licenses {
-                            license {
-                                name = "GNU GPLv3"
-                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
-                            }
-                        }
-                    }
-
-                    // there's probably a better way to do this
-                    artifact(
-                        Paths.get(
-                            project(":licenses:${file.name}").buildDir.toString(),
-                            "libs",
-                            "${file.name}-all.jar"
-                        )
-                    )
-                }
-
-                create<MavenPublication>(file.name + "-included") {
-                    groupId = "nl.abelkrijgtalles"
-                    artifactId = "license-annotations-${file.name}"
-                    version = "$versionn-included"
-                    description = "A simple annotation library for Java to specify a license."
-
-                    pom {
-                        name = "License Annotations"
-                        description = "A simple annotation library for Java to specify a license."
-                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                        licenses {
-                            license {
-                                name = "GNU GPLv3"
-                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
-                            }
-                        }
-                    }
-
-                    // there's probably a better way to do this
-                    artifact(
-                        Paths.get(
-                            project(":licenses:${file.name}-included").buildDir.toString(),
-                            "libs",
-                            "${file.name}-included-all.jar"
-                        )
-                    )
-                }
-            }
+            from(components["java"])
         }
     }
 }
