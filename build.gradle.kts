@@ -202,7 +202,7 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
             }
                 
             dependencies {
-                implementation(project(":licenses:${license.`package`}"))
+                implementation(project(":common"))
             }
             
             publishing {
@@ -225,7 +225,7 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
                             }
                         }
 
-                        from(components["java"])
+                        from(components["shadow"])
                     }
                 }
             }
@@ -289,7 +289,7 @@ publishing {
                 }
             }
 
-            from(components["java"])
+            from(components["shadow"])
         }
     }
 }
