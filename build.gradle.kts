@@ -247,7 +247,7 @@ publishing {
     val githubUser = System.getenv("GITHUB_USER")
     val githubToken = System.getenv("GITHUB_TOKEN")
 
-    val versionn = "2025.01.30"
+    val versionn = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
 
     if (!versionn.startsWith(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))) {
         error("The version doesn't start with the current date. Please change the version.")
