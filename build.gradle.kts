@@ -245,6 +245,7 @@ allprojects.forEach { p ->
     p.tasks {
         named<ShadowJar>("shadowJar") {
             configurations = listOf(project.configurations["compileClasspath"])
+            archiveClassifier = ""
         }
     }
 
