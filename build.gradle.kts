@@ -1,6 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import nl.abelkrijgtalles.licenseannotations.GeneratableLicense
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -12,7 +11,6 @@ import java.time.format.DateTimeFormatter
 plugins {
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 
@@ -198,36 +196,10 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
             
             plugins {
                 java
-                `maven-publish`
             }
                 
             dependencies {
                 implementation(project(":common"))
-            }
-            
-            publishing {
-                publications {
-                    create<MavenPublication>("${license.`package`}") {
-                        groupId = "nl.abelkrijgtalles"
-                        artifactId = "license-annotations-${license.`package`}"
-                        version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
-                        description = "A simple annotation library for Java to specify a license."
-
-                        pom {
-                            name = "License Annotations"
-                            description = "A simple annotation library for Java to specify a license."
-                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                            licenses {
-                                license {
-                                    name = "GNU GPLv3"
-                                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
-                                }
-                            }
-                        }
-
-                        from(components["shadow"])
-                    }
-                }
             }
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
     )
@@ -236,22 +208,37 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
 
 allprojects.forEach { p ->
     p.apply(plugin = "java")
-    p.apply(plugin = "com.github.johnrengelman.shadow")
-
-    p.tasks.build {
-        dependsOn("shadowJar")
-    }
-
-    p.tasks {
-        named<ShadowJar>("shadowJar") {
-            configurations = listOf(project.configurations["compileClasspath"])
-            archiveClassifier = ""
-        }
-    }
+    p.apply(plugin = "maven-publish")
 
     p.dependencies {
         if (p != project(":common").dependencyProject) {
             implementation(project(":common"))
+        }
+    }
+
+
+    p.publishing {
+        publications {
+            create<MavenPublication>(project.name) {
+                groupId = "nl.abelkrijgtalles"
+                artifactId = "license-annotations"
+                version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
+                description = "A simple annotation library for Java to specify a license."
+
+                pom {
+                    name = "License Annotations"
+                    description = "A simple annotation library for Java to specify a license."
+                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                    licenses {
+                        license {
+                            name = "GNU GPLv3"
+                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                        }
+                    }
+                }
+
+                from(components["java"])
+            }
         }
     }
 
@@ -268,29 +255,4 @@ dependencies {
         }
     }
 
-}
-
-publishing {
-    publications {
-        create<MavenPublication>(project.name) {
-            groupId = "nl.abelkrijgtalles"
-            artifactId = "license-annotations"
-            version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
-            description = "A simple annotation library for Java to specify a license."
-
-            pom {
-                name = "License Annotations"
-                description = "A simple annotation library for Java to specify a license."
-                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                licenses {
-                    license {
-                        name = "GNU GPLv3"
-                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
-                    }
-                }
-            }
-
-            from(components["shadow"])
-        }
-    }
 }
