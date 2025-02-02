@@ -219,9 +219,9 @@ allprojects.forEach { p ->
 
     p.publishing {
         publications {
-            create<MavenPublication>(project.name) {
+            create<MavenPublication>(p.name) {
                 groupId = "nl.abelkrijgtalles"
-                artifactId = "license-annotations"
+                artifactId = "license-annotations-${p.name}"
                 version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
                 description = "A simple annotation library for Java to specify a license."
 
