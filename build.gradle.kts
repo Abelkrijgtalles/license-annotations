@@ -240,27 +240,29 @@ project(":licenses").subprojects.forEach { p ->
         dependsOn(p.tasks.build)
     }
 
-    p.publishing {
-        publications {
-            create<MavenPublication>(p.name) {
-                groupId = "nl.abelkrijgtalles"
-                artifactId = "license-annotations-${p.name}"
-                version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
-                description = "A simple annotation library for Java to specify a license."
-
-                pom {
-                    name = "License Annotations"
+    p.afterEvaluate {
+        p.publishing {
+            publications {
+                create<MavenPublication>(p.name) {
+                    groupId = "nl.abelkrijgtalles"
+                    artifactId = "license-annotations-${p.name}"
+                    version = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy.MM.dd"))
                     description = "A simple annotation library for Java to specify a license."
-                    url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
-                    licenses {
-                        license {
-                            name = "GNU GPLv3"
-                            url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+
+                    pom {
+                        name = "License Annotations"
+                        description = "A simple annotation library for Java to specify a license."
+                        url = "https://github.com/Abelkrijgtalles/LicenseAnnotations"
+                        licenses {
+                            license {
+                                name = "GNU GPLv3"
+                                url = "https://github.com/Abelkrijgtalles/LicenseAnnotations/blob/main/LICENSE"
+                            }
                         }
                     }
-                }
 
-                artifact(p.tasks["shadowJar"])
+                    artifact(p.tasks["shadowJar"])
+                }
             }
         }
     }
