@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import nl.abelkrijgtalles.licenseannotations.GeneratableLicense
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     java
     `maven-publish`
+    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
 
 
@@ -216,6 +218,22 @@ allprojects.forEach { p ->
         }
     }
 
+}
+
+project(":licenses").subprojects.forEach { p ->
+
+    p.apply(plugin = "com.github.johnrengelman.shadow")
+
+    p.tasks.build {
+        dependsOn("shadowJar")
+    }
+
+    p.tasks {
+        named<ShadowJar>("shadowJar") {
+            configurations = listOf(project.configurations["compileClasspath"])
+            archiveClassifier = ""
+        }
+    }
 
     p.publishing {
         publications {
@@ -237,22 +255,15 @@ allprojects.forEach { p ->
                     }
                 }
 
-                from(components["java"])
+                from(components["shadow"])
             }
         }
     }
-
 }
 
 dependencies {
 
     // I am to lazy to import them transitive or something like that
     implementation(project(":common"))
-
-    file("licenses").listFiles().forEach { file ->
-        if (file.name != "build") {
-            implementation(project(":licenses:${file.name}"))
-        }
-    }
 
 }
