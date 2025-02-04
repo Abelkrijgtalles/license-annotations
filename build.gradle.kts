@@ -236,9 +236,10 @@ project(":licenses").subprojects.forEach { p ->
     }
 
     p.tasks.publish {
+        dependsOn(p.tasks.jar)
         dependsOn(p.tasks.build)
     }
-    
+
     p.publishing {
         publications {
             create<MavenPublication>(p.name) {
