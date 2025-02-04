@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     java
     `maven-publish`
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("com.gradleup.shadow") version "8.3.5" apply false
 }
 
 
@@ -222,7 +222,7 @@ allprojects.forEach { p ->
 
 project(":licenses").subprojects.forEach { p ->
 
-    p.apply(plugin = "com.github.johnrengelman.shadow")
+    p.apply(plugin = "com.gradleup.shadow")
 
     p.tasks.build {
         dependsOn("shadowJar")
@@ -255,7 +255,7 @@ project(":licenses").subprojects.forEach { p ->
                     }
                 }
 
-                from(components["shadow"])
+                artifact(p.tasks["shadowJar"])
             }
         }
     }
