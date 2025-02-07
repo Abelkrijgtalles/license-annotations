@@ -180,7 +180,7 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
         projectPath.resolve("build.gradle.kts"), """
             dependencies {
             
-                implementation(project(":${license.`package`}"))
+                implementation(project(":licenses:${license.`package`}"))
             
             }
         """.trimIndent().toByteArray(StandardCharsets.UTF_8)
