@@ -190,22 +190,6 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
         StandardCopyOption.REPLACE_EXISTING
     )
 
-    // create build.gradle.kts
-    Files.write(
-        projectPath.resolve("build.gradle.kts"), """
-            import java.time.LocalDate
-            import java.time.format.DateTimeFormatter
-            
-            plugins {
-                java
-            }
-                
-            dependencies {
-                implementation(project(":common"))
-            }
-        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
-    )
-
 }
 
 allprojects.forEach { p ->
@@ -226,6 +210,10 @@ project(":licenses").subprojects.forEach { p ->
 
     p.tasks.build {
         dependsOn("shadowJar")
+    }
+
+    p.dependencies {
+        implementation(project(":common"))
     }
 
     p.tasks {
