@@ -223,8 +223,11 @@ project(":licenses").subprojects.forEach { p ->
         }
     }
 
-    p.tasks.publish {
+    p.tasks.withType<PublishToMavenLocal> {
         dependsOn(p.tasks.jar)
+    }
+
+    p.tasks.publish {
         dependsOn(p.tasks.build)
     }
 
