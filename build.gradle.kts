@@ -107,21 +107,6 @@ fun generateProjectForLicense(license: GeneratableLicense) {
         )
     }
 
-    // create build.gradle.kts
-    Files.write(
-        projectPath.resolve("build.gradle.kts"), """
-            plugins {
-                java
-            }
-                
-            dependencies {
-            
-                implementation(project(":common"))
-            
-            }
-        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
-    )
-
 }
 
 fun generateSourceCodeFile(name: String, packagee: String): String {
@@ -188,6 +173,17 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
         Paths.get(rootDir.toString(), "raw_licenses", "texts", "plain", license.rawId),
         resourcesPath.resolve(license.rawId),
         StandardCopyOption.REPLACE_EXISTING
+    )
+
+    // create build.gradle.kts
+    Files.write(
+        projectPath.resolve("build.gradle.kts"), """
+            dependencies {
+            
+                implementation(project(":${license.`package`}"))
+            
+            }
+        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
     )
 
 }
