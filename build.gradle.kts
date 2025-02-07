@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter
 
 plugins {
     java
-    `java-library`
     `maven-publish`
     id("com.gradleup.shadow") version "8.3.5" apply false
 }
@@ -181,17 +180,11 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
 allprojects.forEach { p ->
     p.apply(plugin = "java")
     p.apply(plugin = "maven-publish")
-    p.apply(plugin = "java-library")
 
     p.dependencies {
         if (p != project(":common").dependencyProject) {
             implementation(project(":common"))
         }
-    }
-
-    p.java {
-        withSourcesJar()
-        withJavadocJar()
     }
 
 }
