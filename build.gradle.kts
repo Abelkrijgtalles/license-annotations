@@ -145,6 +145,7 @@ fun generateSourceCodeFile(name: String, packagee: String): String {
             /**
              * @return When the code was last updated. This could be the original or the edited code, depending on your choice.
              */
+            @PossiblyEmpty
             String lastUpdate() default "";
 
             /**
@@ -155,6 +156,7 @@ fun generateSourceCodeFile(name: String, packagee: String): String {
             /**
              * @return Additional information.
              */
+            @PossiblyEmpty
             String otherInformation() default "";
 
         }
