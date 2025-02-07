@@ -1,6 +1,6 @@
 # License annotations
 
-A simple annotation library to specify licenses.
+A simple annotation library to specify licenses in source code, which also show up in the compiled jar.
 
 ## How to use
 
@@ -54,6 +54,8 @@ Examples:
 
 - `13/14 YOL 1.34` will turn into `pkg_13_14_yol_1_34`.
 - `GPL-3.0-only` will turn into `gpl_3_0_only`.
+
+If you also want the raw license, that's also possible. Just use the transformed id, with `-included` added after it.
 
 ## Variables
 
