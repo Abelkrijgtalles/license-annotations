@@ -1,4 +1,4 @@
-# License annotations
+# License Annotations
 
 A simple annotation library to specify licenses in source code, which also show up in the compiled jar.
 
@@ -7,7 +7,20 @@ A simple annotation library to specify licenses in source code, which also show 
 Please replace LICENSE with the license you want to use. Please see [licenses](#licenses) to see all possible licenses
 and how to specify them.
 
+As the library is hosted on Jitpack, you also need to add Jitpack as a repository. But luckily, the repo is already
+added down below.
+
 Gradle:
+
+Add Jitpack as a repository:
+
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+```
+
+And add License Annotations:
 
 ```groovy
 dependencies {
@@ -15,7 +28,21 @@ dependencies {
 }
 ```
 
-Maven:
+### Maven
+
+Add Jitpack as a repository:
+
+```xml
+
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+
+And add License Annotations:
 
 ```xml
 
