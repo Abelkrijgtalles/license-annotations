@@ -175,17 +175,6 @@ fun generateProjectForLicenseWithEmbeddedLicense(license: GeneratableLicense) {
         StandardCopyOption.REPLACE_EXISTING
     )
 
-    // create build.gradle.kts
-    Files.write(
-        projectPath.resolve("build.gradle.kts"), """
-            dependencies {
-            
-                implementation(project(":licenses:${license.`package`}"))
-            
-            }
-        """.trimIndent().toByteArray(StandardCharsets.UTF_8)
-    )
-
 }
 
 allprojects.forEach { p ->
@@ -210,10 +199,16 @@ project(":licenses").subprojects.forEach { p ->
 
     p.dependencies {
         implementation(project(":common"))
+        if (p.name.endsWith("-included")) {
+            implementation(project(":licenses:${p.name.replace("-included", "")}"))
+        }
     }
 
     p.tasks {
         named<ShadowJar>("shadowJar") {
+            if (p.name.endsWith("-included")) {
+                dependsOn(project(":licenses:${p.name.replace("-included", "")}").tasks.named<ShadowJar>("shadowJar"))
+            }
             configurations = listOf(project.configurations["compileClasspath"])
             archiveClassifier = ""
         }
@@ -253,11 +248,4 @@ project(":licenses").subprojects.forEach { p ->
             }
         }
     }
-}
-
-dependencies {
-
-    // I am to lazy to import them transitive or something like that
-    implementation(project(":common"))
-
 }
